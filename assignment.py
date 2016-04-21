@@ -2,6 +2,7 @@ __author__ = 'nishaswarup'
 
 import structures
 from random import random
+from random import sample
 from time import time
 
 '''
@@ -83,9 +84,22 @@ def random_move_1(soln):
     :param soln: a list of -1 or 1
     :return: An array, look above
     '''
-    i = int(random()*len(soln))
-    j = int(random()*len(soln) - 1)
-    if j >= i: j += 1
+    # Generating two random integers within a range 
+    try:
+        [i,j] = sample(range(0, len(soln)), 2)
+    except ValueError:
+        print('Sample size exceeded population size.')
+
+
+    # This was the code you had, but I don't know if it actually generates two random integers
+    # within a range, I found this function and it also checks that we have enough space in the
+    # range   TODO: eliminate once you agree
+
+    # i = int(random()*len(soln))
+    # j = int(random()*len(soln) - 1)
+    # if j >= i: j += 1
+
+
     # now i and j are two random numbers s.t. i != j
     out = [[i, soln[i], soln[i]*-1]]
     if random() < .5:
@@ -102,9 +116,22 @@ def calculate_residue_2(nums, soln):
     '''
     This calculates the residue for a solution in representation 2.
     :param nums: A list of numbers
-    :param soln: A solution in representation 2
+    :param soln: A solution in representation 2, sequence representing a partitioning
     :return: A number that represents the residue
     '''
+
+    for i in range(len(soln)):
+        if nums[i] != 0:
+            for j in range(i+1,len(soln)):
+                if soln[i] == soln[j]:
+                    nums[i] += nums[j]
+                    nums[j] = 0
+    return KK(nums)
+
+
+
+
+
 
 
 def generate_random_soln_2(nums):
@@ -225,4 +252,16 @@ def test_instance(max_iter):
     print "\t\tResult:\t" + str(R1_HC_ans)
     print "\t\tTime:\t" + str(R1_HC_time) + "s"
 
+def test_calculate_residue_2 ():
+    '''
+    This function tests a small number of cases for which the solution has been 
+    calculated by hand
+    :param: nothing for now
+    :return: boolean, true if it passes the tests
+    '''
+    nums = [10,8,7,6,5]
+    soln = [1,2,2,4,5]
+    return 4 == calculate_residue_2(nums,soln)
+    
 test_instance(25000)
+test_calculate_residue_2()
