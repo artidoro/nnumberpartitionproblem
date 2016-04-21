@@ -145,7 +145,7 @@ def generate_random_soln_2(nums):
     :return: A list of numbers of the same size as nums
     '''
     out = []
-    for x in xrange(nums):
+    for x in xrange(len(nums)):
         out.append(int(random()*len(nums)))
     return out
 
@@ -161,12 +161,12 @@ def random_move_2(soln):
     :return: An array, look above
     '''
     # Generating two random integers
-    i = random()*len(soln)
-    j = random()*len(soln)
+    i = int(random()*len(soln))
+    j = int(random()*len(soln))
     # TODO what do I do in case we have soln of legnth 1?
     if len(soln) < 1:
         while(soln[i] == j):
-            j = random()*len(soln)
+            j = int(random()*len(soln))
 
     # now i and j are two random numbers s.t. i != j
     return [[i, soln[i], j]]
@@ -249,6 +249,7 @@ def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
     best_soln = cur_soln = generate_soln(nums)
     best_residue = cur_residue = find_residue(nums, cur_soln)
    
+    print "cur sol =", cur_soln, "cur res =", cur_residue
     for x in xrange(max_iter):
         # initialize neighbor from current solution
         neighbor = cur_soln
@@ -258,15 +259,20 @@ def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
         for move in moves:
             neighbor[move[0]] = move[2]
         neighbor_residue = find_residue(nums, neighbor)
+        print "neighbor =", neighbor, "neighbor_residue =", neighbor_residue
         # if this was a good move, we keep it
         if neighbor_residue < cur_residue:
             cur_soln = neighbor
             cur_residue =  neighbor_residue
+            print "neighbor was better"
         # otherwise we keep it with some probability
         else:
             if random()  < exp(-(neighbor_residue-cur_residue)/T(x)):
                 cur_soln = neighbor
                 cur_residue =  neighbor_residue
+                print "switched to worst sol"
+        print "cur sol =", cur_soln, "cur res =", cur_residue
+        # we will always return the best solution seen so far, so we store it
         if cur_residue < best_residue:
             best_soln = cur_soln
             best_residue =  cur_residue
@@ -342,5 +348,6 @@ def test_calculate_residue_2 ():
     soln = [1,2,2,4,5]
     return 4 == calculate_residue_2(nums,soln)
 
-test_instance(25000)
-test_calculate_residue_2()
+#test_instance(25000)
+#test_calculate_residue_2()
+print simul_anneal([10,8,7,6,5], 100, generate_random_soln_2, calculate_residue_2, random_move_2)
