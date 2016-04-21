@@ -1,9 +1,10 @@
 __author__ = 'nishaswarup'
 
 import structures
-from random import random
-from random import sample
+from random import random, sample
+from math import exp, floor
 from time import time
+
 
 '''
 The order of this file is
@@ -105,6 +106,8 @@ def random_move_1(soln):
     if random() < .5:
         out.append([j, soln[j], soln[j]*-1])
     return out
+
+
 '''
     ****** Representation 2 *******
     *  The below functions are all for the second representation, where
@@ -146,6 +149,34 @@ def generate_random_soln_2(nums):
         out.append(int(random()*len(nums)))
     return out
 
+
+def random_move_2(soln):
+    '''
+    This function makes a random move on the given solution. It retuns
+    an array of swaps to make in this random move. For example, it could
+    return [[5, 2, 5]]
+    Which would indicate we should change the parameter of position 5 from 2 to 5.
+    The reason we use this strange notation is to make it integrate with random_move_1
+    :param soln: a list of parameters
+    :return: An array, look above
+    '''
+    # Generating two random integers
+    i = random()*len(soln)
+    j = random()*len(soln)
+    # TODO what do I do in case we have soln of legnth 1?
+    if len(soln) < 1:
+        while(soln[i] == j):
+            j = random()*len(soln)
+
+    # now i and j are two random numbers s.t. i != j
+    return [[i, soln[i], j]]
+
+
+
+
+
+
+
 '''
     ****** 3 algorithms *******
     *  The below functions are the 3 algorithms we needed to implement
@@ -180,7 +211,7 @@ def hill_climb(nums, max_iter, generate_soln, find_residue, find_neighbor):
     and then make local improvements.
     :param nums: The list of numbers we're trying to find the partition for
     :param max_iter: The number we're iterating to
-    :param generate_soln: A function used to generate a solution
+    :param generate_soln: A function used to generate a random solution
     :param find_residue: A function used to calculate a residue
     :param find_neighbor: A function that finds a random neighbor. Should be either random_move_1 or random_move_2
     :return: Soln, residue. Solution is a list of numbers, residue is the best residue
@@ -202,6 +233,54 @@ def hill_climb(nums, max_iter, generate_soln, find_residue, find_neighbor):
             for move in moves:
                 best_soln[move[0]] = move[1]
     return best_soln, best_residue
+
+
+def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
+    '''
+    This function runs the third algorithm, where we find a random solution,
+    and then try to improve it, we don't always move to better neighbors 
+    :param nums: The list of numbers we're trying to find the partition for
+    :param max_iter: The number we're iterating to
+    :param generate_soln: A function used to generate a random solution
+    :param find_residue: A function used to calculate a residue
+    :param find_neighbor: A function that finds a random neighbor. Should be either random_move_1 or random_move_2
+    :return: Soln, residue. Solution is a list of numbers, residue is the best residue
+    '''
+    best_soln = cur_soln = generate_soln(nums)
+    best_residue = cur_residue = find_residue(nums, cur_soln)
+   
+    for x in xrange(max_iter):
+        # initialize neighbor from current solution
+        neighbor = cur_soln
+        # find the moves we should make to get to a random neighbor
+        moves = find_neighbor(cur_soln)
+        # make these moves
+        for move in moves:
+            neighbor[move[0]] = move[2]
+        neighbor_residue = find_residue(nums, neighbor)
+        # if this was a good move, we keep it
+        if neighbor_residue < cur_residue:
+            cur_soln = neighbor
+            cur_residue =  neighbor_residue
+        # otherwise we keep it with some probability
+        else:
+            if random()  < exp(-(neighbor_residue-cur_residue)/T(x)):
+                cur_soln = neighbor
+                cur_residue =  neighbor_residue
+        if cur_residue < best_residue:
+            best_soln = cur_soln
+            best_residue =  cur_residue
+    return best_soln, best_residue
+
+
+def T(iter):
+    '''
+    This function determines the cooling schedule. It affects the probability of keeping
+    a worst solution in the simulated annealing function.
+    '''    
+    return (10**10) * (0.8)**(floor(iter/300.))
+
+
 
 '''
     ****** Testing *******
@@ -262,6 +341,6 @@ def test_calculate_residue_2 ():
     nums = [10,8,7,6,5]
     soln = [1,2,2,4,5]
     return 4 == calculate_residue_2(nums,soln)
-    
+
 test_instance(25000)
 test_calculate_residue_2()
