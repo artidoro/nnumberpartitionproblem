@@ -1,6 +1,7 @@
 __author__ = 'nishaswarup'
 
 import structures
+from copy import deepcopy
 from random import random, sample
 from math import exp, floor
 from time import time
@@ -12,7 +13,7 @@ The order of this file is
     - Functions for Representation 1
     - Functions for Representation 2
     - Functions for the 3 algorithms
-    - Functions for Testing
+    - Functions for Testing and Data Gathering
 '''
 
 def KK(nums):
@@ -40,6 +41,7 @@ def KK(nums):
         biggest2 = structures.heap_pop(heap)
         structures.heap_push(heap, biggest - biggest2)
     return heap[0]
+
 
 '''
     ****** Representation 1 *******
@@ -112,7 +114,7 @@ def calculate_residue_2(nums, soln):
     :param soln: A solution in representation 2, sequence representing a partitioning
     :return: A number that represents the residue
     '''
-
+    nums = deepcopy(nums)
     for i in range(len(soln)):
         if nums[i] != 0:
             for j in range(i+1,len(soln)):
@@ -120,11 +122,6 @@ def calculate_residue_2(nums, soln):
                     nums[i] += nums[j]
                     nums[j] = 0
     return KK(nums)
-
-
-
-
-
 
 
 def generate_random_soln_2(nums):
@@ -138,6 +135,7 @@ def generate_random_soln_2(nums):
     for x in xrange(len(nums)):
         out.append(int(random()*len(nums)))
     return out
+
 
 
 def random_move_2(soln):
@@ -158,13 +156,8 @@ def random_move_2(soln):
     while(soln[i] == j):
         j = int(random()*len(soln))
 
-    # now i and j are two random numbers s.t. i != j
+    # now i and j are two random numbers s.t. soln[i] != j
     return [[i, soln[i], j]]
-
-
-
-
-
 
 
 '''
@@ -206,6 +199,7 @@ def hill_climb(nums, max_iter, generate_soln, find_residue, find_neighbor):
     :param find_neighbor: A function that finds a random neighbor. Should be either random_move_1 or random_move_2
     :return: Soln, residue. Solution is a list of numbers, residue is the best residue
     '''
+
     best_soln = generate_soln(nums)
     best_residue = find_residue(nums, best_soln)
     for x in xrange(max_iter):
@@ -238,8 +232,6 @@ def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
     '''
     best_soln = cur_soln = generate_soln(nums)
     best_residue = cur_residue = find_residue(nums, cur_soln)
-   
-  #  print "cur sol =", cur_soln, "cur res =", cur_residue
     for x in xrange(max_iter):
         # initialize neighbor from current solution
         neighbor = cur_soln
@@ -249,19 +241,15 @@ def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
         for move in moves:
             neighbor[move[0]] = move[2]
         neighbor_residue = find_residue(nums, neighbor)
-        #print "neighbor =", neighbor, "neighbor_residue =", neighbor_residue
         # if this was a good move, we keep it
         if neighbor_residue < cur_residue:
             cur_soln = neighbor
             cur_residue =  neighbor_residue
-         #   print "neighbor was better"
         # otherwise we keep it with some probability
         else:
             if random()  < exp(-(neighbor_residue-cur_residue)/T(x)):
                 cur_soln = neighbor
                 cur_residue =  neighbor_residue
-          #      print "switched to worst sol"
-        #print "cur sol =", cur_soln, "cur res =", cur_residue
         # we will always return the best solution seen so far, so we store it
         if cur_residue < best_residue:
             best_soln = cur_soln
@@ -274,6 +262,7 @@ def T(iter):
     This function determines the cooling schedule. It affects the probability of keeping
     a worst solution in the simulated annealing function. We are using the function 
     given in the prompt.
+    :param iter: the current iteration
     '''    
     return (10**10) * (0.8)**(floor(iter/300.))
 
@@ -295,7 +284,102 @@ def generate_random_instance():
         out.append( int(random()*(10**12)) + 1 )
     return out
 
-def test_instance(max_iter,nums):
+
+def write_data(outfile,nb_instances,max_iter):
+    '''
+    This function writes in a file the time and residue of nb_instances with the KK algorithm, 
+    and both representations of the repeated random algorithm, the hill climbing algorithm, 
+    and the simulated annealing algorithm for max_iter iterations.
+    :param outfile: output file (string)
+    :param nb_instances: the number of random instances we will run on
+    :param max_iter: how many iterations per instance we should run
+    :return: writes in the output file the results
+    '''
+    # initializing the lists storing the results
+    KK_res = []
+    R1_RR = []
+    R1_HC = []
+    R1_SA = []
+    R2_RR = []
+    R2_HC = []
+    R2_SA = []
+
+    # Running the nb_instances
+    for i in xrange(nb_instances):
+        # generate random instance
+        instance = generate_random_instance()
+        # KK algorithm
+        start_time = time()
+        KK_ans = KK(instance)
+        KK_time = time() - start_time
+
+        # Run Representation 1 Algorithm
+        # repeated random
+        start_time = time()
+        temp,R1_RR_ans = repeated_random(instance, max_iter, generate_random_soln_1, calculate_residue_1)
+        R1_RR_time = time() - start_time
+             
+        # hill climbing
+        start_time = time()
+        temp, R1_HC_ans = hill_climb(instance, max_iter, generate_random_soln_1, calculate_residue_1, random_move_1)
+        R1_HC_time = time() - start_time
+        
+        # simulated annealing 
+        start_time = time()
+        temp, R1_SA_ans = simul_anneal(instance, max_iter, generate_random_soln_1, calculate_residue_1, random_move_1)
+        R1_SA_time = time() - start_time
+
+
+
+        # Run Representation 2 Algorithm
+        # repeated random
+        start_time = time()
+        temp,R2_RR_ans = repeated_random(instance, max_iter, generate_random_soln_2, calculate_residue_2)
+        R2_RR_time = time() - start_time
+    
+        #hill climbing
+        start_time = time()
+        temp, R2_HC_ans = hill_climb(instance, max_iter, generate_random_soln_2, calculate_residue_2, random_move_2)
+        R2_HC_time = time() - start_time
+    
+        # simulated annealing 
+        start_time = time()
+        temp, R2_SA_ans = simul_anneal(instance, max_iter, generate_random_soln_2, calculate_residue_2, random_move_2)
+        R2_SA_time = time() - start_time
+    
+
+        # Store results
+        # store results for KK alg
+        KK_res.append([KK_ans,KK_time])
+        # store results for representation 1
+        R1_RR.append([R1_RR_ans,R1_RR_time])
+        R1_HC.append([R1_HC_ans,R1_HC_time])
+        R1_SA.append([R1_SA_ans,R1_SA_time])
+        # store results for representation 2
+        R2_RR.append([R2_RR_ans,R2_RR_time])
+        R2_HC.append([R2_HC_ans,R2_HC_time])
+        R2_SA.append([R2_SA_ans,R2_SA_time])
+      
+    # Write on output file    
+    outfile = open(outfile,'w')
+    # headers
+    outfile.write('KK_ans'+'\t'+'KK_time'+'\t\t'+
+        'R1_RR_ans'+'\t'+'R1_RR_time'+'\t\t'+'R1_HC_ans'+'\t'+'R1_HC_time'+'\t\t'+'R1_SA_ans'+'\t'+'R1_SA_time'+'\t\t'+
+        'R2_RR_ans'+'\t'+'R2_RR_time'+'\t\t'+'R2_HC_ans'+'\t'+'R2_HC_time'+'\t\t'+'R2_SA_ans'+'\t'+'R2_SA_time'+'\n')
+    # two columns per algorithm, one for residue, one for time
+    # each line contains the results of one instance
+    # different algorithms are separated by an empty column
+    for i in xrange(nb_instances):
+        outfile.write(str(KK_res[i][0])+'\t'+str(KK_res[i][1])+'\t\t'+
+            str(R1_RR[i][0])+'\t'+str(R1_RR[i][1])+'\t\t'+str(R1_HC[i][0])+'\t'+str(R1_HC[i][1])+'\t\t'
+                +str(R1_SA[i][0])+'\t'+str(R1_SA[i][1])+'\t\t'+
+            str(R2_RR[i][0])+'\t'+str(R2_RR[i][1])+'\t\t'+str(R2_HC[i][0])+'\t'+str(R2_HC[i][1])+'\t\t'
+                +str(R2_SA[i][0])+'\t'+str(R2_SA[i][1])+'\n')
+    outfile.close()
+
+
+
+def test_instance(max_iter):
     '''
     This function tests one instance with the KK algorithm, a repeated random algorithm,
     a hill climbing algorithm, and a simulated annealing algorithm for 25,000 iterations.
@@ -303,7 +387,7 @@ def test_instance(max_iter,nums):
     :return: Notihg, for now
     '''
     # generate instance
-    instance = nums #generate_random_instance()
+    instance = generate_random_instance()
     # KK algorithm
     print "KK Algorithm"
     start_time = time()
@@ -345,7 +429,7 @@ def test_instance(max_iter,nums):
     R1_RR_time = time() - start_time
     print "\t\tResult:\t" + str(R1_RR_ans)
     print "\t\tTime:\t" + str(R1_RR_time)
-    # hill climbing
+    #hill climbing
     print "\tHill Climbing"
     start_time = time()
     temp, R1_HC_ans = hill_climb(instance, max_iter, generate_random_soln_2, calculate_residue_2, random_move_2)
@@ -374,6 +458,12 @@ def test_calculate_residue_2 ():
 
 
 def get_nums_file(infile):
+    '''
+    Given an input file with one integer per line, this function reads from the input 
+    file and returns the corresponding list of integers
+    :param infile: name of the inputfile
+    :return: list of integers
+    '''
     infile = open(infile)
     nums = []
     for line in infile:
@@ -384,6 +474,6 @@ def get_nums_file(infile):
 
 
 
-test_instance(25000,get_nums_file('input.txt'))
-#test_calculate_residue_2()
-#print simul_anneal([10,8,7,6,5], 100, generate_random_soln_2, calculate_residue_2, random_move_2)
+write_data('output.txt',50,2500)
+
+
