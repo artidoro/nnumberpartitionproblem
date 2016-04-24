@@ -89,17 +89,7 @@ def random_move_1(soln):
     try:
         [i,j] = sample(range(0, len(soln)), 2)
     except ValueError:
-        print('Sample size exceeded population size.')
-
-
-    # This was the code you had, but I don't know if it actually generates two random integers
-    # within a range, I found this function and it also checks that we have enough space in the
-    # range   TODO: eliminate once you agree
-
-    # i = int(random()*len(soln))
-    # j = int(random()*len(soln) - 1)
-    # if j >= i: j += 1
-
+        print('Given solution is too short')
 
     # now i and j are two random numbers s.t. i != j
     out = [[i, soln[i], soln[i]*-1]]
@@ -163,10 +153,10 @@ def random_move_2(soln):
     # Generating two random integers
     i = int(random()*len(soln))
     j = int(random()*len(soln))
-    # TODO what do I do in case we have soln of legnth 1?
-    if len(soln) < 1:
-        while(soln[i] == j):
-            j = int(random()*len(soln))
+    # handle short solution
+    assert len(soln) is not 1, "the given solution is too short"
+    while(soln[i] == j):
+        j = int(random()*len(soln))
 
     # now i and j are two random numbers s.t. i != j
     return [[i, soln[i], j]]
@@ -249,7 +239,7 @@ def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
     best_soln = cur_soln = generate_soln(nums)
     best_residue = cur_residue = find_residue(nums, cur_soln)
    
-    print "cur sol =", cur_soln, "cur res =", cur_residue
+  #  print "cur sol =", cur_soln, "cur res =", cur_residue
     for x in xrange(max_iter):
         # initialize neighbor from current solution
         neighbor = cur_soln
@@ -259,19 +249,19 @@ def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
         for move in moves:
             neighbor[move[0]] = move[2]
         neighbor_residue = find_residue(nums, neighbor)
-        print "neighbor =", neighbor, "neighbor_residue =", neighbor_residue
+        #print "neighbor =", neighbor, "neighbor_residue =", neighbor_residue
         # if this was a good move, we keep it
         if neighbor_residue < cur_residue:
             cur_soln = neighbor
             cur_residue =  neighbor_residue
-            print "neighbor was better"
+         #   print "neighbor was better"
         # otherwise we keep it with some probability
         else:
             if random()  < exp(-(neighbor_residue-cur_residue)/T(x)):
                 cur_soln = neighbor
                 cur_residue =  neighbor_residue
-                print "switched to worst sol"
-        print "cur sol =", cur_soln, "cur res =", cur_residue
+          #      print "switched to worst sol"
+        #print "cur sol =", cur_soln, "cur res =", cur_residue
         # we will always return the best solution seen so far, so we store it
         if cur_residue < best_residue:
             best_soln = cur_soln
@@ -282,7 +272,8 @@ def simul_anneal(nums, max_iter, generate_soln, find_residue, find_neighbor):
 def T(iter):
     '''
     This function determines the cooling schedule. It affects the probability of keeping
-    a worst solution in the simulated annealing function.
+    a worst solution in the simulated annealing function. We are using the function 
+    given in the prompt.
     '''    
     return (10**10) * (0.8)**(floor(iter/300.))
 
@@ -304,7 +295,7 @@ def generate_random_instance():
         out.append( int(random()*(10**12)) + 1 )
     return out
 
-def test_instance(max_iter):
+def test_instance(max_iter,nums):
     '''
     This function tests one instance with the KK algorithm, a repeated random algorithm,
     a hill climbing algorithm, and a simulated annealing algorithm for 25,000 iterations.
@@ -312,7 +303,7 @@ def test_instance(max_iter):
     :return: Notihg, for now
     '''
     # generate instance
-    instance = generate_random_instance()
+    instance = nums #generate_random_instance()
     # KK algorithm
     print "KK Algorithm"
     start_time = time()
@@ -337,6 +328,39 @@ def test_instance(max_iter):
     print "\t\tResult:\t" + str(R1_HC_ans)
     print "\t\tTime:\t" + str(R1_HC_time) + "s"
 
+    # simulated annealing 
+    print "\tSimulated Annealing"
+    start_time = time()
+    temp, R1_HC_ans = simul_anneal(instance, max_iter, generate_random_soln_1, calculate_residue_1, random_move_1)
+    R1_HC_time = time() - start_time
+    print "\t\tResult:\t" + str(R1_HC_ans)
+    print "\t\tTime:\t" + str(R1_HC_time) + "s"
+
+    # Run Representation 2 Algorithm
+    print "Representation 2:"
+    # repeated random
+    print "\tRepeated Random"
+    start_time = time()
+    temp,R1_RR_ans = repeated_random(instance, max_iter, generate_random_soln_2, calculate_residue_2)
+    R1_RR_time = time() - start_time
+    print "\t\tResult:\t" + str(R1_RR_ans)
+    print "\t\tTime:\t" + str(R1_RR_time)
+    # hill climbing
+    print "\tHill Climbing"
+    start_time = time()
+    temp, R1_HC_ans = hill_climb(instance, max_iter, generate_random_soln_2, calculate_residue_2, random_move_2)
+    R1_HC_time = time() - start_time
+    print "\t\tResult:\t" + str(R1_HC_ans)
+    print "\t\tTime:\t" + str(R1_HC_time) + "s"
+
+    # simulated annealing 
+    print "\tSimulated Annealing"
+    start_time = time()
+    temp, R1_HC_ans = simul_anneal(instance, max_iter, generate_random_soln_2, calculate_residue_2, random_move_2)
+    R1_HC_time = time() - start_time
+    print "\t\tResult:\t" + str(R1_HC_ans)
+    print "\t\tTime:\t" + str(R1_HC_time) + "s"
+
 def test_calculate_residue_2 ():
     '''
     This function tests a small number of cases for which the solution has been 
@@ -348,6 +372,18 @@ def test_calculate_residue_2 ():
     soln = [1,2,2,4,5]
     return 4 == calculate_residue_2(nums,soln)
 
-#test_instance(25000)
+
+def get_nums_file(infile):
+    infile = open(infile)
+    nums = []
+    for line in infile:
+        nums.append(line)
+    nums = [int(i) for i in nums]
+    infile.close()  
+    return nums
+
+
+
+test_instance(25000,get_nums_file('input.txt'))
 #test_calculate_residue_2()
-print simul_anneal([10,8,7,6,5], 100, generate_random_soln_2, calculate_residue_2, random_move_2)
+#print simul_anneal([10,8,7,6,5], 100, generate_random_soln_2, calculate_residue_2, random_move_2)
