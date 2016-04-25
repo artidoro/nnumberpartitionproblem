@@ -15,5 +15,14 @@ We can make a sketch of what still needs to be done here and split the work.
 2. Proof of O(nlogn) - [A]
 3. [Representation 2] Part 2 - residue -[N]
 4. Alg 3 - Simulated Annealing -[A]
-6. Test function, collect data & make graphs
+6. Test function, collect data & make graphs 
 7. Shell file to run in C -[N]
+
+
+For the tests and Data Gathering: 
+Read from file and store solution of 100 int length
+
+Generate 50 random instances of the problem
+
+	For both representations
+		repeat the three algorithms 25000 iterations
