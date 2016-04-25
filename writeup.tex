@@ -75,6 +75,28 @@ The time complexity is polynomial in $nb$ more precisely it is $O((nb)^2)$ since
 
 
 
+\section{Karma Karp Algorithm Time Complexity}
+The Karma Karp algorithm can be implemented in $O(n\log n)$. 
+We will discribe the algorithm in that we have implemented.
+
+We construct a binary Max Heap with the initial set. Inserting something in the Max Heap takes at most $O(\log n)$, and we are doing it for every element in the set. Therefore the total time from the construction of the Max Heap is $O(n \log n)$.
+
+Once we have the Max Heap constructed, we need to extract the two largest elements. This corresponds to two Delete Min operations, which take $O(\log n)$ each. We then take the difference of the two elements and insert it back to the Max Heap, also with time $O(\log n)$.
+
+We repeat the last step exactly $n-1$ times. At every step we reduce the size of the Max Heap by 1 (two delete min and one insert). We have an initial size of $n$ and we need to get down to $1$. Which takes $n-1$ steps.
+
+Now putting everything together we have a run time of:
+
+\begin{eqnarray}
+&&\text{Construct Max Heap} + (n-1)(\text{2 Delete Min}+\text{Insert})\\
+&=& O(n \log n)+(n-1)(2*O(\log n)+O(\log n)))\\
+&=& O(n\log n) + O(n\log n)\\
+&=& \boxed{O(n\log n)}
+\end{eqnarray}
+
+Which shows that our algorithm implements Karma Karp in $O(n\log n)$
+
+
 \end{document}
 
 
