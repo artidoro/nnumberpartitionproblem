@@ -5,7 +5,7 @@ from copy import deepcopy
 from random import random, sample
 from math import exp, floor
 from time import time
-
+from sys import argv
 
 '''
 The order of this file is
@@ -473,7 +473,19 @@ def get_nums_file(infile):
     return nums
 
 
+# [to collect data]
+# write_data('output.txt',50,2500)
 
-write_data('output.txt',50,2500)
+def main():
+    # Check for correct input
+    if len(argv) != 2:
+        print "usage: python assignment.py <inputfile>",
+        return -1
+    # Initialize input variables
+    inputfile = argv[1]
+    numlist = get_nums_file(inputfile)
+    residue = KK(numlist)
+    print residue
 
+if __name__ == "__main__": main()
 
