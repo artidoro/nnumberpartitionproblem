@@ -102,7 +102,13 @@ The implementation of Karma Karp that we have provided returns a residue but doe
 
 Supposing that we get the partition from the Karma Karp algorithm, we can use that partition as a starting point instead of generating a random one.
 
-The first thing to notice is that the three algorithms always return the best solution found. Using the Karma Karp partition as a starting point ensures that we will never get a worst solution. Starting with Karma Karp will have different effects for the three algorithms.
+The first thing to notice is that the three algorithms always return the best solution found. Using the Karma Karp partition as a starting point ensures that we will never get a worst solution. Starting with Karma Karp will have different effects for the two representations.
+
+\textbf{Standard vs Prepartition:}
+In the Standard Representation starting with Karma Karp would start our optimization from that point in solution space. We therefore expect our solution to slightly improve from the Karma Karp solution, but only slightly. It would only slightly improve because it would quickly get stuck in local minima, the solution space is not very well defined. 
+
+With the Prepartition representation, the optimization from the Karma Karp solution would still reduce the residue significantly. We expect the solution to be lower than the solutions obtained without starting with Karma Karp. Here it is harder to get stuck in local minima because the solution space is defined better. 
+
 
 
 \textbf{Repeated Random:}
@@ -113,18 +119,18 @@ With the prepartition representation instead, Repeated Random usually generates 
 
 
 \textbf{Hill Climbing:}
-When we start Hill Climbing with Karma Karp we are actually starting with an already fairly optimized solution. What will happen is that improvements will be less frequent. This means that the curve of residue in time will be flatter. We still may get some improvements from the Karma Karp solution, in either representations. 
+When we start Hill Climbing with Karma Karp we are actually starting with an already fairly optimized solution. What will happen is that improvements will be less frequent. This means that the curve of residue in time will be flatter. As we get closer to the optimized value the solution space gets flatter and flatter. 
 
-The risk is to hit a local minimum with the Karma Karp solution. The Hill Climbing approach may miss to get out of the local minimum since it moves to a neighboring solution only if it is better than the current one. This is particularly relevant to the standard representation, which as it appears from the graphs presented above tends to get stuck to local minima very quickly. 
 
-The prepartion representation will likely improve on the Karma Karp solution.
+%The risk is to hit a local minimum with the Karma Karp solution. The Hill Climbing approach may miss to get out of the local minimum since it moves to a neighboring solution only if it is better than the current one. This is particularly relevant to the standard representation, which as it appears from the graphs presented above tends to get stuck to local minima very quickly.  If the Karma Karp solution is a local minimum, and the Repeated Random can't get out of it, it will just return that as solution.  
+%
+%The prepartion representation will likely improve on the Karma Karp solution. 
 
 
 
 \textbf{Simulated Annealing:}
-Similarly, starting with the Karma Karp solution corresponds to starting with an already fairly optimized solution. Here as well, the frequency of the improvements will be lower. Simulated Annealing will be more likely to improve the Karma Karp solution with respect to Hill Climbing since it allows a intermediary transition to a worst solution. This means that it can get  out of local minima easily.
+Similarly, starting with the Karma Karp solution corresponds to starting with an already fairly optimized solution. Here as well, the frequency of the improvements will be lower. This means that the curve of residue in time will be flatter. 
 
-On average we expect the prepartition representation representation to have better results, as we it was highlighted in the graphs.
 
 
 
