@@ -1,4 +1,4 @@
-__author__ = 'nishaswarup'
+__author__ = 'nishaswarup and artidoropagnoni'
 
 import structures
 from copy import deepcopy
@@ -445,6 +445,121 @@ def test_instance(max_iter):
     print "\t\tResult:\t" + str(R1_HC_ans)
     print "\t\tTime:\t" + str(R1_HC_time) + "s"
 
+
+def print_res_RR(nums, max_iter, generate_soln, find_residue, outfile):
+    '''
+    This function prints out the residues in an output file
+    :param nums: The list of numbers we're finding the number partition for
+    :param max_iter: The number we're iterating to
+    :param generate_soln: A function for generating random solutions (this varies for represenations 1 and 2)
+    :param find_residue: A function for calculating the residue of a solution (again, varies per representation)
+    :param outfile: output file
+    :return: writes in file
+    '''
+    # open output file
+    outfile = open(outfile,'w')
+    # header
+    outfile.write('RR\n')
+    # generate a random solution
+    best_soln = generate_soln(nums)
+    best_residue = find_residue(nums, best_soln)
+    # we loop through lots of times, and return the
+    # best random solution
+    for x in xrange(max_iter):
+        soln = generate_soln(nums)
+        residue = find_residue(nums, soln)
+        if residue < best_residue:
+            best_residue = residue
+            best_soln = soln
+        outfile.write(str(best_residue)+'\n')
+    outfile.close()
+    return
+   
+
+def print_res_HC(nums, max_iter, generate_soln, find_residue, find_neighbor,outfile):
+    '''
+    This function prints out the residues in an output file
+    :param nums: The list of numbers we're trying to find the partition for
+    :param max_iter: The number we're iterating to
+    :param generate_soln: A function used to generate a random solution
+    :param find_residue: A function used to calculate a residue
+    :param find_neighbor: A function that finds a random neighbor. Should be either random_move_1 or random_move_2
+    :param outfile: output file
+    :return: writes in file
+    '''
+    # open output file
+    outfile = open(outfile,'w')
+    # header
+    outfile.write('HC\n')
+    best_soln = generate_soln(nums)
+    best_residue = find_residue(nums, best_soln)
+    for x in xrange(max_iter):
+        # find the moves we should make to get to a random neighbor
+        moves = find_neighbor(best_soln)
+        # make these moves
+        for move in moves:
+            best_soln[move[0]] = move[2]
+        residue = find_residue(nums, best_soln)
+        # if this was a good move, we keep it
+        if residue < best_residue:
+            best_residue = residue
+        # otherwise we revert
+        else:
+            for move in moves:
+                best_soln[move[0]] = move[1]
+        outfile.write(str(best_residue)+'\n')
+    outfile.close()
+    return
+
+
+def print_res_SA(nums, max_iter, generate_soln, find_residue, find_neighbor,outfile):
+    '''
+    This function prints out the residues in an output file
+    :param nums: The list of numbers we're trying to find the partition for
+    :param max_iter: The number we're iterating to
+    :param generate_soln: A function used to generate a random solution
+    :param find_residue: A function used to calculate a residue
+    :param find_neighbor: A function that finds a random neighbor. Should be either random_move_1 or random_move_2
+    :param outfile: output file
+    :return: writes in file
+    '''
+    # open output file
+    outfile = open(outfile,'w')
+    # header
+    outfile.write('SA\n')
+    best_soln = cur_soln = generate_soln(nums)
+    best_residue = cur_residue = find_residue(nums, cur_soln)
+    for x in xrange(max_iter):
+        # initialize neighbor from current solution
+        neighbor = cur_soln
+        # find the moves we should make to get to a random neighbor
+        moves = find_neighbor(cur_soln)
+        # make these moves
+        for move in moves:
+            neighbor[move[0]] = move[2]
+        neighbor_residue = find_residue(nums, neighbor)
+        # if this was a good move, we keep it
+        if neighbor_residue < cur_residue:
+            cur_soln = neighbor
+            cur_residue =  neighbor_residue
+        # otherwise we keep it with some probability
+        else:
+            if random()  < exp(-(neighbor_residue-cur_residue)/T(x)):
+                cur_soln = neighbor
+                cur_residue =  neighbor_residue
+        # we will always return the best solution seen so far, so we store it
+        if cur_residue < best_residue:
+            best_soln = cur_soln
+            best_residue =  cur_residue
+        outfile.write(str(best_residue)+'\n')
+    outfile.close()
+    return 
+
+
+
+
+
+
 def test_calculate_residue_2 ():
     '''
     This function tests a small number of cases for which the solution has been 
@@ -455,6 +570,10 @@ def test_calculate_residue_2 ():
     nums = [10,8,7,6,5]
     soln = [1,2,2,4,5]
     return 4 == calculate_residue_2(nums,soln)
+
+
+
+
 
 
 def get_nums_file(infile):
@@ -474,18 +593,24 @@ def get_nums_file(infile):
 
 
 # [to collect data]
-# write_data('output.txt',50,2500)
+write_data('output1.txt',50,2500)
+# print_res_RR(generate_random_instance(),25000,generate_random_soln_1,calculate_residue_1,"RR_R1")
+# print_res_RR(generate_random_instance(),25000,generate_random_soln_2,calculate_residue_2,"RR_R2")
+# print_res_HC(generate_random_instance(),25000,generate_random_soln_1, calculate_residue_1, random_move_1, "HC_R1")
+# print_res_HC(generate_random_instance(),25000,generate_random_soln_2, calculate_residue_2, random_move_2, "HC_R2")
+# print_res_SA(generate_random_instance(),25000,generate_random_soln_1, calculate_residue_1, random_move_1, "SA_R1")
+# print_res_SA(generate_random_instance(),25000,generate_random_soln_2, calculate_residue_2, random_move_2, "SA_R2")
 
-def main():
-    # Check for correct input
-    if len(argv) != 2:
-        print "usage: python assignment.py <inputfile>",
-        return -1
-    # Initialize input variables
-    inputfile = argv[1]
-    numlist = get_nums_file(inputfile)
-    residue = KK(numlist)
-    print residue
+# def main():
+#     # Check for correct input
+#     if len(argv) != 2:
+#         print "usage: python assignment.py <inputfile>",
+#         return -1
+#     # Initialize input variables
+#     inputfile = argv[1]
+#     numlist = get_nums_file(inputfile)
+#     residue = KK(numlist)
+#     print residue
 
-if __name__ == "__main__": main()
+# if __name__ == "__main__": main()
 
