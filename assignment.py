@@ -593,24 +593,18 @@ def get_nums_file(infile):
 
 
 # [to collect data]
-write_data('output1.txt',50,2500)
-# print_res_RR(generate_random_instance(),25000,generate_random_soln_1,calculate_residue_1,"RR_R1")
-# print_res_RR(generate_random_instance(),25000,generate_random_soln_2,calculate_residue_2,"RR_R2")
-# print_res_HC(generate_random_instance(),25000,generate_random_soln_1, calculate_residue_1, random_move_1, "HC_R1")
-# print_res_HC(generate_random_instance(),25000,generate_random_soln_2, calculate_residue_2, random_move_2, "HC_R2")
-# print_res_SA(generate_random_instance(),25000,generate_random_soln_1, calculate_residue_1, random_move_1, "SA_R1")
-# print_res_SA(generate_random_instance(),25000,generate_random_soln_2, calculate_residue_2, random_move_2, "SA_R2")
+# write_data('output1.txt',50,2500)
 
-# def main():
-#     # Check for correct input
-#     if len(argv) != 2:
-#         print "usage: python assignment.py <inputfile>",
-#         return -1
-#     # Initialize input variables
-#     inputfile = argv[1]
-#     numlist = get_nums_file(inputfile)
-#     residue = KK(numlist)
-#     print residue
+def main():
+    # Check for correct input
+    if len(argv) != 2:
+        print "usage: python assignment.py <inputfile>",
+        return -1
+    # Initialize input variables
+    inputfile = argv[1]
+    numlist = get_nums_file(inputfile)
+    residue = KK(numlist)
+    print residue
 
-# if __name__ == "__main__": main()
+if __name__ == "__main__": main()
 
